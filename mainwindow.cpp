@@ -7,6 +7,8 @@
 #include <future>
 #include <thread>
 
+#include <QFileDialog>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -16,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
   this->setWindowTitle("KillSwith");
-  ui->exeName->setPlaceholderText("Name exe file for kill without .exe");
+//  ui->exeName->setPlaceholderText("Name exe file for kill without .exe");
 
   timer = new QTimer(this);
   connect(timer, SIGNAL(timeout()), this, SLOT(delayedFunction()));
@@ -32,9 +34,9 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::showTimeLabel() {
+  --sec;
   QString s = QString::number(sec);
   ui->lbl1->setText("Update " + s);
-  --sec;
 
   if (sec == 0) {
     timerUpdate->stop();
@@ -61,7 +63,7 @@ void MainWindow::delayedFunction() {
       QString program = "taskkill";
       QStringList arguments;
       arguments << "/F"
-                << "/IM" << ui->exeName->text() + ".exe";
+                << "/IM" << ui->exeName->text();
       QProcess::execute(program, arguments);
 
       this->ui->lbl1->setText("INTERNET IS OFF");
@@ -76,6 +78,7 @@ void MainWindow::delayedFunction() {
     sec = ui->timerSet->value() * 60;
     timerUpdate->start(1000);
   } // end if
+  qDebug() << ui->exeName->text();
 }
 
 void MainWindow::on_pushButton_clicked() {
@@ -97,10 +100,10 @@ void MainWindow::on_btnStop_clicked() {
   ui->pushButton->setStyleSheet("background-color: none");
 }
 
-void MainWindow::on_pushButton_2_clicked() {
-  if (this->minimumWidth() == 235) {
-    this->setMinimumWidth(500);
-  } else {
-    this->setMinimumWidth(235);
-  }
+void MainWindow::on_btnOpenFile_clicked() {
+  QString filePath = QFileDialog::getOpenFileName(
+      this, "Выбрать программу для закрытия", "C:\\", "EXE (*.exe)");
+  QFileInfo fileInfo(filePath);
+  QString fileName = fileInfo.fileName();
+  ui->exeName->setText(fileName);
 }
