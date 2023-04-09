@@ -13,12 +13,12 @@
 #include "ui_mainwindow.h"
 
 int sec;
+int timerUpdateSec;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
   this->setWindowTitle("KillSwith");
-//  ui->exeName->setPlaceholderText("Name exe file for kill without .exe");
 
   timer = new QTimer(this);
   connect(timer, SIGNAL(timeout()), this, SLOT(delayedFunction()));
@@ -34,11 +34,11 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::showTimeLabel() {
-  --sec;
-  QString s = QString::number(sec);
+  --timerUpdateSec;
+  QString s = QString::number(timerUpdateSec);
   ui->lbl1->setText("Update " + s);
 
-  if (sec == 0) {
+  if (timerUpdateSec == 0) {
     timerUpdate->stop();
   }
 }
@@ -71,32 +71,36 @@ void MainWindow::delayedFunction() {
     } // ** end  if
   }   // * end if
 
-  if (ui->timerSet->value() == 0) {
-    sec = 15;
-    timerUpdate->start(1000);
-  } else {
-    sec = ui->timerSet->value() * 60;
-    timerUpdate->start(1000);
-  } // end if
-  qDebug() << ui->exeName->text();
+  timerUpdateSec = sec;
+  timerUpdate->start(1000);
 }
 
 void MainWindow::on_pushButton_clicked() {
   ui->pushButton->setStyleSheet("background-color: green");
-  int time = ui->timerSet->value();
-  if (time == 0) {
+  int timeMinuts = ui->timerSet->value();
+  int timeSeconds = ui->setSeconds->value();
+  ui->setSeconds->setMaximum(59);
+
+  if (timeMinuts == 0 && timeSeconds == 0) {
     sec = 15;
+    timerUpdateSec = sec;
     timerUpdate->start(1000);
     timer->start(15000);
   } else {
-    sec = ui->timerSet->value() * 60;
+
+    int finalTimer = (timeMinuts * 60) + timeSeconds;
+
+    sec = finalTimer;
+    timerUpdateSec = sec;
     timerUpdate->start(1000);
-    timer->start(time * 1000 * 60);
+    timer->start(finalTimer * 1000);
   }
 }
 
 void MainWindow::on_btnStop_clicked() {
   timer->stop();
+  timerUpdate->stop();
+  ui->lbl1->setText("Stop");
   ui->pushButton->setStyleSheet("background-color: none");
 }
 
